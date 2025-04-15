@@ -21,13 +21,13 @@ jobs:
       run: xcodebuild -resolvePackageDependencies
 
     - name: Build for macOS
-      run: xcodebuild -scheme "HexSecApp" -destination 'platform=macOS' build
+      run: xcodebuild -scheme "HexSec" -destination 'platform=macOS' build
 
     - name: Test for macOS
-      run: xcodebuild -scheme "HexSecApp" -destination 'platform=macOS' test
+      run: xcodebuild -scheme "HexSec" -destination 'platform=macOS' test
 
     - name: Test for iPhone
-      run: xcodebuild -scheme "HexSecApp" -destination 'platform=iOS Simulator,name=iPhone 16' test
+      run: xcodebuild -scheme "HexSec" -destination 'platform=iOS Simulator,name=iPhone 16' test
 
     - name: Test for iPad
-      run: xcodebuild -scheme "HexSecApp" -destination 'platform=iOS Simulator,name=iPad (10th generation)' test
+      run: xcodebuild -scheme "HexSec" -destination 'platform=iOS Simulator,name=iPad (10th generation)' test

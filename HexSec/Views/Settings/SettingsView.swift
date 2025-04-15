@@ -82,6 +82,8 @@ struct ExtractedView: View {
     @State private var selectedOption: String = "Системный"
     @State private var newDomain: String = ""
     
+    @State private var isFeedbackEnabled: Bool = getFeedbackEnabled()
+
     let colorSchemeOptions = ["Светлый", "Тёмный", "Системный"]
     
     @State private var selection: String? = nil
@@ -276,6 +278,13 @@ struct ExtractedView: View {
                 
                 
                 Section(header: Text("Настройки приложения")) {
+                    Toggle(isOn: $isFeedbackEnabled) {
+                        Text("Включить отправку отзыва")
+                    }
+                    .onChange(of: isFeedbackEnabled) {
+                        toggleFeedbackEnabled()
+                    }
+                    
                     NavigationLink("Уведомления", destination: NotificationView())
                     NavigationLink("Помощь и поддержка", destination: UnreleasedNavView())
                     NavigationLink("Условия пользования", destination: UnreleasedNavView())

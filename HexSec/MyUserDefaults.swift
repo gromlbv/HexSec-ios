@@ -10,6 +10,7 @@ import Foundation
 private let domainsKey = "myDomains"
 private let tokenKey = "authToken"
 private let notificationKey = "isNotificationSubscription"
+private let feedbackEnabledKey = "isFeedbackEnabled"
 
 // MARK: - Domains
 
@@ -53,4 +54,18 @@ func loadToken() -> String? {
 
 func updateNotification(_ isSubscribed: Bool) {
     UserDefaults.standard.set(isSubscribed, forKey: notificationKey)
+}
+
+
+
+// MARK: - Feedback
+
+func toggleFeedbackEnabled() {
+    let current = getFeedbackEnabled()
+    let toggled = !(current)
+    UserDefaults.standard.set(toggled, forKey: feedbackEnabledKey)
+}
+
+func getFeedbackEnabled() -> Bool {
+    UserDefaults.standard.bool(forKey: feedbackEnabledKey)
 }

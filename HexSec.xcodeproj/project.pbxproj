@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		785EC0FE2DA443D300E3FC18 /* EventSource in Frameworks */ = {isa = PBXBuildFile; productRef = 785EC0FD2DA443D300E3FC18 /* EventSource */; };
 		786A7EED2D47FEEF00E804C8 /* StoreKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 786A7EEC2D47FEEF00E804C8 /* StoreKit.storekit */; };
+		788899782DAEEEC40066B009 /* DomainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 788899772DAEEEC40066B009 /* DomainStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,6 +34,7 @@
 		786A7ECF2D47FE4600E804C8 /* HexSecTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HexSecTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		786A7ED92D47FE4600E804C8 /* HexSecUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HexSecUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		786A7EEC2D47FEEF00E804C8 /* StoreKit.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = StoreKit.storekit; sourceTree = "<group>"; };
+		788899772DAEEEC40066B009 /* DomainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -82,6 +84,7 @@
 		786A7EB62D47FE4500E804C8 = {
 			isa = PBXGroup;
 			children = (
+				788899772DAEEEC40066B009 /* DomainStore.swift */,
 				786A7EEC2D47FEEF00E804C8 /* StoreKit.storekit */,
 				786A7EC12D47FE4500E804C8 /* HexSec */,
 				786A7ED22D47FE4600E804C8 /* HexSecTests */,
@@ -249,6 +252,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				788899782DAEEEC40066B009 /* DomainStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,7 +430,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.lbv.HexSec;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.lbvo.HexSec;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -462,7 +466,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.lbv.HexSec;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.lbvo.HexSec;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";

@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct HexSecApp: App {
+    @StateObject var store = DomainStore()
+
     var body: some Scene {
         WindowGroup {
             MainView()
@@ -13,30 +15,27 @@ struct MainView: View {
     @Environment(\.openURL) private var openUrl
     @StateObject private var auth = AuthManager.shared
     @State private var isFeedbackActive: Bool = false
-    @State private var isFeedbackEnabled: Bool = getFeedbackEnabled()
+    @AppStorage("isFeedbackEnabled") private var isFeedbackEnabled: Bool = false
     
-    
+    @AppStorage("domainList") private var domainListData: String = "[]"
+    @State private var domainList: [String] = []
+        
     var body: some View {
+        
         ZStack (alignment: .trailing){
             if auth.isLoggedIn {
                 MainAppView()
                     .preferredColorScheme(.dark)
                     .environmentObject(AppViewModel.shared)
+                    .environmentObject(DomainStore())
                     .transition(.blurReplace.animation(.easeInOut(duration: 1.6)).combined(with: .opacity).animation(.easeInOut(duration: 1.6)))
                 
             } else {
                 VStack{
-                    Button{
-                        auth.isLoggedIn = true
-                    } label : {
-                        Text("[DEBUG] - Войти без данных")
-                    }
-                    
                     LoginView()
                         .preferredColorScheme(.dark)
                 }
                 .transition(.blurReplace.combined(with: .opacity).animation(.easeInOut(duration: 0.8)))
-                
             }
             
             
@@ -51,21 +50,18 @@ struct MainView: View {
                             Color.clear
                                 .contentShape(Rectangle())
                         }
-                        
                         .frame(width: 21, height: 62)
                         .frame(maxWidth: .infinity, alignment: .trailing)
-
+                        .zIndex(6)
                         
                         .padding(0)
                         .buttonStyle(.plain)
                         .cornerRadius(0)
-                        
 
                         RoundedRectangle(cornerRadius: 0)
                             .fill(Color.white.opacity(0.2))
                             .frame(width: 8, height: 52, alignment: .trailing)
                         
-
                             .clipShape(
                                 .rect(
                                     topLeadingRadius: 80,
@@ -74,6 +70,7 @@ struct MainView: View {
                                     topTrailingRadius: 0
                                 )
                             )
+                            .zIndex(5)
                             .frame(maxWidth: .infinity, alignment: .trailing)
 
                     }
@@ -122,13 +119,13 @@ struct MainView: View {
                                 .padding(8)
                                 .foregroundStyle(.white)
                                 
-                                .background(.white.opacity(0.2))
-                                .buttonStyle(.borderless)
+                                .background(Color.white.opacity(0.12))
                                 .cornerRadius(.infinity)
                             }
+                            .buttonStyle(.plain)
+
                             
                         }
-                        
                         
                         
                         Button{
@@ -146,9 +143,12 @@ struct MainView: View {
                         .buttonStyle(.borderedProminent)
                     }
                     .padding(24)
+                    #if os(iOS)
                     .padding(.bottom, UIApplication.shared.connectedScenes
                         .compactMap { $0 as? UIWindowScene }
                         .first?.windows.first?.safeAreaInsets.bottom ?? 0)
+#endif
+
                     
                     .background(.black)
                     .clipShape(
@@ -161,9 +161,10 @@ struct MainView: View {
                     )
                     .frame(maxWidth: 560)
                     .frame(maxWidth: .infinity)
-
                     
                 }
+
+                .blur(radius: isFeedbackActive ? 0 : 64)
                 .offset(y: isFeedbackActive ? 0 : 424)
 
                 .background(Color.black.mix(with: .gray, by: 0.2).opacity(0.5))

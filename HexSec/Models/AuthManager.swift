@@ -55,14 +55,14 @@ class AuthManager: ObservableObject {
         }
     }
     
-    func sendOTP(email: String) {
-        AuthService.shared.checkEmail(email: email) { result in
+    func sendOTP(email: String, completion: @escaping (Bool) -> Void) {
+        AuthService.shared.sendOTP(email: email) { result in
             DispatchQueue.main.async {
                 switch result {
-                case .success(_):
-                    self.isLoggedIn = true
+                case .success:
+                    completion(true)
                 case .failure:
-                    self.isLoggedIn = false
+                    completion(false)
                 }
             }
         }

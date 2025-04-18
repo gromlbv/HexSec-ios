@@ -51,10 +51,8 @@ class MonitoringManager: ObservableObject {
                                         label: formattedTime,
                                         value: Double(response.processingTimeMillis)
                                     )
-                                    // Добавляем новую точку
                                     self.monitoringData.append(newData)
                                     
-                                    // Ограничиваем массив до последних 20 точек
                                     if self.monitoringData.count > 20 {
                                         self.monitoringData.removeFirst(self.monitoringData.count - 20)
                                     }

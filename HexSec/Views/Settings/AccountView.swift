@@ -6,7 +6,7 @@
 //
 
 //
-//  NotificationView.swift
+//  AppSettingsView.swift
 //  HexSec
 //
 //  Created by dmitry lbv on 06.04.2025.

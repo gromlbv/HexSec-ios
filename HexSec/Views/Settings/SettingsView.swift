@@ -11,13 +11,17 @@ struct SettingsView: View {
     @State private var selectedTab: Int = 0
     
     var body: some View {
-    #if os(macOS)
+#if os(macOS)
         NavigationSplitView {
             ExtractedView()
                 .padding()
                 .navigationSplitViewColumnWidth(240)
                 .navigationSplitViewStyle(.prominentDetail)
-
+                .background(.black)
+            Spacer()
+                .foregroundStyle(.black)
+                .background(.black)
+            
         } detail: {
             VStack {
                 Text("Выберите настройку")
@@ -26,44 +30,40 @@ struct SettingsView: View {
         }
         .navigationSplitViewStyle(.prominentDetail)
         .navigationTitle(Text("Настройки"))
-
+        
 #else
 #if os(iOS)
-if UIDevice.current.userInterfaceIdiom == .pad {
-    NavigationSplitView(
-        sidebar: {
-            NavigationStack {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            NavigationSplitView(
+                sidebar: {
+                    NavigationStack {
+                        ExtractedView()
+                    }
+                    .navigationSplitViewColumnWidth(410)
+                    
+                },
+                detail: {
+                    VStack {
+                        Text("Выберите настройку")
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                    .toolbar(removing: .sidebarToggle)
+                    
+                }
+                
+            )
+        } else {
+            NavigationView {
                 ExtractedView()
             }
-            .navigationSplitViewColumnWidth(410)
-
-        },
-        detail: {
-            VStack {
-                Text("Выберите настройку")
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            .toolbar(removing: .sidebarToggle)
-
         }
-
-    )
-} else {
-    NavigationView {
-        ExtractedView()
-    }
-}
 #endif
-
+        
 #endif
     }
 }
 
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView()
-    }
-}
+
 
 struct ExtractedView: View {
     @StateObject private var auth = AuthManager.shared
@@ -71,22 +71,20 @@ struct ExtractedView: View {
     @State private var isPremium: Bool = true
     
     @State private var isPopupPresented = false
+    @State private var showShareSheet = false
     
-    #if os(iOS)
-    @State private var editMode: EditMode = .inactive
-    #else
-    @State private var isEditing = false
-    #endif
+    @State private var isEditing: Bool = false
+
     
     @State private var volumeLevel: Double = 50.0
     @State private var selectedOption: String = "Системный"
     @State private var newDomain: String = ""
-    
-    @State private var isFeedbackEnabled: Bool = getFeedbackEnabled()
-
+        
     let colorSchemeOptions = ["Светлый", "Тёмный", "Системный"]
     
     @State private var selection: String? = nil
+    
+    @EnvironmentObject var store: DomainStore
     
     var body: some View {
         VStack{
@@ -132,7 +130,6 @@ struct ExtractedView: View {
             .opacity(appViewModel.flashSection == .settingsDomains ? 0.2 : 1)
             
             HStack{
-#if os(iOS)
                 NavigationLink(
                     destination: UnreleasedNavView()
                 ){
@@ -142,6 +139,7 @@ struct ExtractedView: View {
                                 .bold()
                             Spacer()
                             Image(systemName: "arrow.trianglehead.2.clockwise")
+                                .frame(width: 11, height: 11)
                         }
                         Text("Осталось 14 дней")
                             .font(.callout)
@@ -151,11 +149,13 @@ struct ExtractedView: View {
                 }
                 .foregroundStyle(.primary)
                 
+                #if os(iOS)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
+                #endif
                 .background(Material.ultraThick)
                 .cornerRadius(10)
-                
+
                 NavigationLink(
                     destination: AccountView()
                 ){
@@ -165,6 +165,7 @@ struct ExtractedView: View {
                                 .bold()
                             Spacer()
                             Image(systemName: "person.circle")
+                                .frame(width: 12, height: 12)
                         }
                         Text("testuser")
                             .font(.callout)
@@ -173,28 +174,34 @@ struct ExtractedView: View {
                 }
                 
                 .foregroundStyle(.primary)
+                
+                #if os(iOS)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
+                #endif
                 .background(Material.ultraThick)
                 .cornerRadius(10)
+                
                 .contextMenu {
                     Button {
-                        UIPasteboard.general.string = "hexsec.ru"
+                        showShareSheet = true
                     } label: {
-                        Label("Поделиться приложением", systemImage: "apple.logo")
+                        Label("Поделиться приложением", systemImage: "arrowshape.turn.up.right")
                     }
                     Button(role: .destructive) {
                         auth.logout()
                     } label: {
                         Label("Выйти из аккаунта", systemImage: "rectangle.portrait.and.arrow.forward")
                     }
+
                 }
                 
-#endif
             }
             .opacity(appViewModel.flashSection == .settingsDomains ? 0.2 : 1)
             
+            #if os(iOS)
             .padding(.horizontal, 18)
+            #endif
             
             Divider()
 #if os(iOS)
@@ -207,59 +214,23 @@ struct ExtractedView: View {
                             HStack{
                     Text("Мои домены")
                     Spacer()
-                    
+
+                    Button(isEditing ? "Готово" : "Изменить") {
+                        isEditing.toggle()
+                    }
                     .font(.subheadline)
                     .transition(.opacity)
                 },
-                        footer: Text("При добавлении или удалении домена возможно прийдется перезагрузить приложение")) {
-                    ForEach(getDomains(), id: \.self) { domain in
-                        ZStack(alignment: .trailing) {
-                            NavigationLink {
-                                UnreleasedNavView()
-                            } label: {
-                                HStack {
-                                        Image(systemName: "line.3.horizontal")
-                                            .foregroundColor(.gray)
-                                            .padding(.trailing, 8)
-                                    
-                                    VStack(alignment: .leading) {
-                                        Text(domain)
-                                        Text("211мс • Здесь будет статус")
-                                            .font(.subheadline)
-                                            .opacity(0.5)
-                                    }
-                                    Spacer()
-                                }
-                                .contentShape(Rectangle())
-                            }
-                            
-                                Button(action: {
-                                    deleteDomain(domain)
-                                    isPopupPresented = true
-                                }) {
-                                    Image(systemName: "xmark")
-                                        .foregroundColor(.white)
-                                        .imageScale(.small)
-                                }
-                                .zIndex(2)
-                                .background {
-                                    Circle()
-                                        .fill(Color.red)
-                                        .frame(width: 24, height: 24)
-                                }
-                                .padding(.trailing, 24)
-                        
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                deleteDomain(domain)
-                                isPopupPresented = true
-                            } label: {
-                                Label("Удалить", systemImage: "trash")
-                            }
+                        footer: Text("Также вы можете добавить поддомен и даже определенную ссылку с параметрами")) {
+                    
+                    ForEach(store.domainList, id: \.self) { domain in
+                        DomainRow(domain: domain, isEditing: $isEditing) {
+                            deleteDomain(domain)
                         }
                     }
-                        
+                    .id(UUID())
+                    
+                    
                     Button {
                         self.selection = "Second"
                     } label: {
@@ -273,59 +244,158 @@ struct ExtractedView: View {
                     
                     
                 }
-                .scaleEffect(appViewModel.flashSection == .settingsDomains ? 1.03 : 1)
+                
+                        .scaleEffect(appViewModel.flashSection == .settingsDomains ? 1.03 : 1)
                 
                 
                 
-                Section(header: Text("Настройки приложения")) {
-                    Toggle(isOn: $isFeedbackEnabled) {
-                        Text("Включить отправку отзыва")
-                    }
-                    .onChange(of: isFeedbackEnabled) {
-                        toggleFeedbackEnabled()
-                    }
+                Section(header: Text("Главное")) {
                     
-                    NavigationLink("Уведомления", destination: NotificationView())
+                    NavigationLink("Настройки приложения", destination: AppSettingsView())
                     NavigationLink("Помощь и поддержка", destination: UnreleasedNavView())
-                    NavigationLink("Условия пользования", destination: UnreleasedNavView())
+                    NavigationLink("Условия пользования", destination: LegalView())
+
                 }
                 .opacity(appViewModel.flashSection == .settingsDomains ? 0.2 : 1)
                 
             }
-            
-            .alert(isPresented: $isPopupPresented) {
-                Alert(
-                    title: Text("Ранняя сборка"),
-                    message: Text("При удалении домена скорее всего прийдется перезагрузить приложение"),
-                    primaryButton: .default(Text("Окей")) {
-                        isPopupPresented = false
-                    },
-                    secondaryButton: .default(Text("Понял"))
-                )
+
+            .sheet(isPresented: $showShareSheet) {
+                #if os(iOS)
+                ShareSheet(items: ["HexSec - Мониторинг сайтов", URL(string: "https://hexsec.ru")!])
+            #endif
+
             }
             .sheet(isPresented: Binding<Bool>(
                 get: { self.selection == "Second" },
                 set: { if !$0 { self.selection = nil } }
             )) {
                 EnterDomianView(myDomain: $newDomain)
-                    .presentationDetents([.height(230)])
+                    .presentationDetents([.height(340)])
                     .presentationBackground(Color.black)
                     .presentationCornerRadius(24)
+                    .presentationDragIndicator(.visible)
+
             }
         }
+        .background(.black)
 
-        #if os(iOS)
+        
+#if os(iOS)
         .toolbar(removing: .sidebarToggle)
-        #endif
+#endif
     }
     
     func deleteDomain(_ domain: String) {
-        var domains = getDomains()
-        domains.removeAll { $0 == domain }
-        UserDefaults.standard.set(domains, forKey: "myDomains")
+        store.remove(domain)
     }
 }
 
-#Preview {
-    SettingsView()
+#if os(iOS)
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+#endif
+
+
+struct SettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingsView()
+            .environmentObject(DomainStore())
+    }
+}
+
+
+struct DomainRow: View {
+    let domain: String
+    @Binding var isEditing: Bool
+    let deleteAction: () -> Void
+    
+    
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            NavigationLink {
+                UnreleasedNavView()
+            } label: {
+                HStack {
+                    if isEditing {
+                        Image(systemName: "line.3.horizontal")
+                            .foregroundColor(.gray)
+                            .padding(.trailing, 8)
+                    }
+                    
+                    //Image(systemName: "globe")
+                    //    .foregroundColor(.accentColor)
+                    //    .frame(width: 32, height: 32)
+                    //    .cornerRadius(8)
+                    
+                    VStack(alignment: .leading) {
+                        Text(domain)
+                        Text("Онлайн • 211мс")
+                            .font(.subheadline)
+                            .opacity(0.5)
+                    }
+                    Spacer()
+                }
+            }
+            
+            if isEditing {
+                Button(action: deleteAction) {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.white)
+                        .imageScale(.small)
+                        .background(
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 24, height: 24)
+                        )
+                }
+                .padding(.trailing, 24)
+            }
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                deleteAction()
+            } label: {
+                Label("Удалить", systemImage: "trash")
+            }
+        }
+        .contextMenu {
+            
+            Button {
+
+            } label: {
+                Label("Сканировать", systemImage: "lock.shield")
+            }
+
+            Button {
+
+            } label: {
+                Label("Мониторинг", systemImage: "network")
+            }
+            
+            Divider()
+            
+            Button {
+
+            } label: {
+                Label("Открыть в браузере", systemImage: "link")
+            }
+
+            Button(role: .destructive) {
+                deleteAction()
+            } label: {
+                Label("Удалить домен", systemImage: "trash")
+            }
+
+        }
+        
+    }
 }

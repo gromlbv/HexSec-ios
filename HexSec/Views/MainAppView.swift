@@ -47,7 +47,7 @@ struct MainAppView: View {
                 }
                 .tag(2)
             
-            #elseif os(iOS)
+            #else
 
             SettingsView()
                 .tabItem {
@@ -63,18 +63,14 @@ struct MainAppView: View {
         #if os(macOS)
         .toolbar(removing: .title)
         .toolbar {
-            ToolbarItem(id: "toggle-bookmark", placement: .primaryAction) {
-                Button(action: {
-                }) {
-                    Label("Настройки", systemImage: "gear")
-                }
-                .labelStyle(.iconOnly)
-            }
+
         }
+        .toolbarBackground(Color.black)
 #endif
     }
 }
 
 #Preview {
     MainAppView()
+        .environmentObject(DomainStore())
 }

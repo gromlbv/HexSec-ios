@@ -11,61 +11,95 @@ struct EnterDomianView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var myDomain: String
     @FocusState private var isFocused: Bool
+    
+    @EnvironmentObject var store: DomainStore
 
     var body: some View {
         VStack(spacing: 24) {
-            HStack {
-                Text("Введите ваш домен")
-                    .font(.headline)
-                Spacer()
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.gray.opacity(0.5))
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Новый домен")
                         .font(.title2)
+                        .bold()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text("Мы поддерживаем даже поддомены и ссылки с аргументами!")
+                        .font(.subheadline)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .opacity(0.5)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+
+
+                Spacer()
+                Image(systemName: "globe")
+                    .imageScale(.large)
+                    .font(.title2)
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 64, height: 64)
+                    .background(Color.accentColor.opacity(0.2))
+                    .cornerRadius(.infinity)
             }
 
             HStack {
-                TextField("Введите домен", text: $myDomain)
+                TextField("hexsec.ru", text: $myDomain)
                     .font(.title)
-                    .multilineTextAlignment(.center)
-                    .padding(12)
+                    .textFieldStyle(.plain)
+                    .frame(height: 64)
                     .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.12), lineWidth: 1)
+                        Color.clear
+                            .contentShape(Rectangle())
                     )
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .focused($isFocused)
+                    .overlay(
+                        Rectangle() // Линия снизу
+                            .frame(height: 2)
+                            .offset(y: 0)
+                            .foregroundColor(.white.opacity(0.12)), alignment: .bottom
+                    )
+                    .padding(.bottom, 8)
 #if !os(macOS)
                     .keyboardType(.URL)
                     .submitLabel(.done)
                     .autocorrectionDisabled(true)
                     .autocapitalization(.none)
 #endif
+                    .focused($isFocused)
                     .onAppear { isFocused = true }
                     .onSubmit {
-                        saveDomain(myDomain)
+                        store.add(myDomain)
                         dismiss()
                     }
             }
             .padding(.bottom, 12)
 
             Button {
-                saveDomain(myDomain)
+                store.add(myDomain)
                 dismiss()
             } label: {
                 Text("Сохранить")
                     .font(.title2)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                    .padding()
             }
             .buttonStyle(BorderedProminentButtonStyle())
+            .cornerRadius(.infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(18)
-        .background(Color.gray.opacity(0.12))
+        .background(.black)
+    }
+}
+
+struct EnterDomianView_Previews: PreviewProvider {
+    static var previews: some View {
+        let domain = Binding<String>(
+            get: { "" },
+            set: { _ in }
+        )
+        
+        EnterDomianView(myDomain: domain)
+            .environmentObject(DomainStore())
     }
 }

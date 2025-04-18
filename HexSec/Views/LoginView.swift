@@ -49,15 +49,18 @@ struct LoginView: View {
                                 return
                             }
                             
-                            auth.validatePassword(email: inputUsername, password: inputPassword) { pwResult in
-                                guard pwResult == "Пароль совпал" else {
-                                    resultText = pwResult
-                                    return
-                                }
-                                
-                                auth.sendOTP(email: inputUsername)
-                                resultText = "OTP отправлен"
+                            
+                            
+                            
+                        }
+                        auth.validatePassword(email: inputUsername, password: inputPassword) { pwResult in
+                            guard pwResult == "Пароль подошел" else {
+                                resultText = pwResult
                                 return
+                            }
+                            
+                            auth.sendOTP(email: inputUsername) { success in
+                                resultText = success ? "OTP отправлен" : "Не удалось отправить OTP"
                             }
                         }
                     }
@@ -84,6 +87,13 @@ struct LoginExtractedView: View {
     var body: some View {
         VStack {
             VStack {
+                Button{
+                    auth.isLoggedIn = true
+                } label : {
+                    Text("[DEBUG] - Войти без данных")
+                }
+                .buttonStyle(.bordered)
+                
                 Image(.fullLogo)
                 Text("Авторизуйтесь чтобы продолжить")
                     .font(.caption)
@@ -128,13 +138,13 @@ struct LoginExtractedView: View {
             }
             .padding()
             .frame(maxWidth: 400)
-
+            
             Spacer()
             
             VStack {
                 Button(action: {
                     action()
-                    isAlertVisible = true
+                    //isAlertVisible = true
                 }) {
                     Text("СОЗДАТЬ ИЛИ ВОЙТИ В АККАУНТ")
                         .font(.body)
@@ -155,7 +165,7 @@ struct LoginExtractedView: View {
             .padding(.horizontal)
             .padding(.bottom, 24)
             .frame(maxWidth: 400)
-
+            
             
         }
         .alert(isPresented: $isAlertVisible) {

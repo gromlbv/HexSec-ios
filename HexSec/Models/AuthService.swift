@@ -74,33 +74,32 @@ class AuthService {
     }
     
     func checkPassword(email: String, password: String, completion: @escaping (Result<Bool, Error>) -> Void) {
-        guard let url = URL(string: "https://just-wholly-osprey.ngrok-free.app/auth/check/password?email=\(email)&pw=\(password)") else { return }
-        
+        guard let url = URL(string: "https://just-wholly-osprey.ngrok-free.app/auth/check/password?email=\(email)&pw=\(password)") else {
+            return
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
+
+        URLSession.shared.dataTask(with: request) { _, response, error in
             if let error = error {
                 completion(.failure(error))
                 return
             }
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 completion(.failure(NSError(domain: "no response", code: -1)))
                 return
             }
-            
-            if httpResponse.statusCode == 200, let data = data {
-                let string = String(data: data, encoding: .utf8)?
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                completion(.success(string == "true"))
+
+            if httpResponse.statusCode == 200 {
+                completion(.success(true))
             } else {
-                let error = NSError(domain: "email check failed", code: httpResponse.statusCode)
+                let error = NSError(domain: "password check failed", code: httpResponse.statusCode)
                 completion(.failure(error))
             }
-        }
-        .resume()
+        }.resume()
     }
     
     func sendOTP(email: String, completion: @escaping (Result<Bool, Error>) -> Void) {

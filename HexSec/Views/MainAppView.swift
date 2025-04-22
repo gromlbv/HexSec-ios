@@ -9,9 +9,10 @@ import SwiftUI
 
 struct MainAppView: View {
     @ObservedObject var appViewModel = AppViewModel.shared
-    @State private var selection: String? = nil
     @StateObject private var auth = AuthManager.shared
     @State private var token: String = (loadToken() ?? "none")
+    
+    @State private var selection: String? = nil
     
     var body: some View {
 

@@ -57,7 +57,21 @@ struct AccountView: View {
                         .frame(maxWidth: .infinity)
                         
                     }
+                    Section(header: Text("Параметры аккаунта")) {
+                        NavigationLink(
+                            destination: UnreleasedNavView()
+                        ){
+                            Text("Сменить пароль")
+                        }
+                        NavigationLink(
+                            destination: UnreleasedNavView()
+                        ){
+                            Text("Удалить аккаунт")
+                                .foregroundStyle(.red)
+                        }
+                    }
                     Text(token)
+                    
 
                 }
             }

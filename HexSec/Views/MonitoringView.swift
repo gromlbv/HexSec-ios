@@ -12,7 +12,7 @@ struct MonitoringView: View {
     @ObservedObject var appViewModel = AppViewModel.shared
     @EnvironmentObject var store: DomainStore
     @StateObject private var monitoringManager = MonitoringManager()
-
+    
     @State private var currentDomainIndex: Int = 0
     @State private var selectedRange: TimeRange = .day
     @State private var scrollPosition: Int?
@@ -88,10 +88,59 @@ struct MonitoringView: View {
                     
                     Divider()
                     
-                    Form {
-                        realtimeSection
-                        timeRangeSection
+                    VStack {
+                        if let processingTime = monitoringManager.processingTimeMillis {
+                            VStack{
+                                Text("Среднее время отклика")
+                                    .font(.callout)
+                                    .opacity(0.5)
+                                HStack(alignment: .bottom){
+                                    Text("\(processingTime)")
+                                        .font(.system(size: 100, weight: .bold, design: .default))
+                                        .foregroundStyle(Color.accentColor)
+                                    Text("ms")
+                                        .font(.headline)
+                                }
+                            }
+                            
+                            
+                            .transition(.opacity)
+                            
+                            //if let latestRequestDate = monitoringManager.latestRequestDate {
+                            //    Text("Обновлено: \(latestRequestDate)")
+                            //        .font(.footnote)
+                            //        .opacity(0.5)
+                            //}
+                        }
+                        
+                        VStack{
+                            realtimeSection
+                            
+                            VStack{
+                                tableSection
+                                
+                                Button {
+                                    
+                                } label: {
+                                    Text("Статистика за месяц")
+                                        .multilineTextAlignment(.center)
+                                        .foregroundStyle(.accentColor)
+                                }
+                                .frame(width: 238, alignment: .top)
+                                .background(Color(red: 0.49, green: 0, blue: 0.1).opacity(0.12))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 32)
+                                    .inset(by: 0.5)
+                                    .stroke(.white.opacity(0.08), lineWidth: 1)
+                                )
+                            }
+                            
+                            
+                        }
+
+                        Spacer()
                     }
+                    .padding(.top, 46)
                 }
                 .refreshable {
                     monitoringManager.start(domain: currentDomain)
@@ -109,134 +158,98 @@ struct MonitoringView: View {
         }
     }
     
+    
     private var realtimeSection: some View {
+        let curGradient = LinearGradient(
+            gradient: Gradient (
+                colors: [
+                    Color(Color.accentColor).opacity(0.1),
+                    Color(Color.accentColor).opacity(0.0)
+                ]
+            ),
+            startPoint: .top,
+            endPoint: .bottom
+        )
         
-        Section(header: Text("В реальном времени")) {
-            VStack(spacing: 24) {
-                
-                
-                if monitoringManager.monitoringData.isEmpty {
-                    ProgressView("Загрузка...")
-                        .progressViewStyle(CircularProgressViewStyle(tint: .accentColor))
-                        .padding()
-                        .padding(.vertical, 128)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                } else {
-                    
-                    
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading) {
-                            if let processingTime = monitoringManager.processingTimeMillis {
-                                Text("\(processingTime) ms")
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .background(.white.opacity(0.2))
-                                    .cornerRadius(6)
-                            }
-                            if let responseCode = monitoringManager.responseCode {
-                                HStack(spacing: 6){
-                                    Text("Ответ домена:")
-                                        .font(.footnote)
-                                        .opacity(0.5)
-                                    Circle()
-                                        .fill(.green)
-                                        .frame(width: 4, height: 4)
-                                        .scaleEffect(scaleAnimation1*1.2)
-                                        .opacity(1/scaleAnimation1*2)
+        
+        return Chart(monitoringManager.monitoringData) { data in
+            LineMark(
+                x: .value("Дата", data.label),
+                y: .value("Время обработки", data.value)
+            )
+            
+            //.annotation(position: .top) {
+            //    Text("\(data.label)")
+            //        .font(.system(size: 18, weight: .semibold, design: .rounded))
+            //        .foregroundStyle(.accentColor)
+            //}
+            .foregroundStyle(Color.accentColor)
+            //.interpolationMethod(.cardinal)
+            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .butt))
+            
+            AreaMark(
+                x: .value("Дата", data.label),
+                y: .value("Время обработки", data.value)
+            )
+            .foregroundStyle(curGradient)
 
-                                        .overlay(
-                                            Circle()
-                                                .fill(.green)
-                                                .frame(width: 4, height: 4)
-                                                .scaleEffect(scaleAnimation2 * 2)
-                                                .opacity(1/scaleAnimation2*6)
-                                        )
-                                        .onAppear {
-                                            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                                                scaleAnimation1 = 1
-                                            }
-                                            
-                                            withAnimation(.easeIn(duration: 3).repeatForever(autoreverses: false)) {
-                                                scaleAnimation2 = 1
-                                            }
-                                        }
-                                    
-                                    Text("\(responseCode)")
-                                        .foregroundStyle(.green)
-                                        .font(.footnote)
-                                    Image(systemName: "questionmark.circle.fill")
-                                        .imageScale(.small)
-                                        .opacity(0.35)
-                                }
-                                
-                            }
-                        }
-                        Spacer()
-                        
-                        if let latestRequestDate = monitoringManager.latestRequestDate {
-                            Text("Обновлено: \(latestRequestDate)")
-                                .font(.footnote)
-                                .opacity(0.5)
-                        }
-                    }
-                    .padding()
-                    .background(Color.green.opacity(0.12))
-                    
-                    
-                    
-                    Chart(monitoringManager.monitoringData) { data in
-                        LineMark(
-                            x: .value("Дата", data.label),
-                            y: .value("Время обработки", data.value)
-                        )
-                        .foregroundStyle(Color.accentColor)
-                        .interpolationMethod(.cardinal)
-                        .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .butt))
-                    }
-                    .chartLegend(position: .top, alignment: .leading)
-                    .tint(Color.accentColor)
-                    .frame(height: 200)
-                    .chartXAxis {
-                        AxisMarks(values: .stride(by: 1))
-                    }
-                    .padding()
-                    .padding(.bottom)
-                    
-                }
-                
-                if isDebugMode {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Дебаг данные:")
-                            .font(.headline)
-                            .padding(.bottom, 4)
-                        
-                        ForEach(monitoringManager.debug, id: \.self) { message in
-                            Text(message)
-                                .font(.footnote)
-                                .foregroundColor(.gray)
-                                .lineLimit(1)
-                        }
-                        
-                        if let responseCode = monitoringManager.responseCode {
-                            Text("Response Code: \(responseCode)")
-                                .font(.footnote)
-                                .foregroundColor(.blue)
-                        }
-                        
-                        if let processingTime = monitoringManager.processingTimeMillis {
-                            Text("Processing Time: \(processingTime) ms")
-                                .font(.footnote)
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    .padding(.leading, 10)
-                }
-            }
         }
-        .listRowInsets(EdgeInsets())
-#if os(iOS)
-        .listSectionSpacing(0)
-#endif
+        .chartLegend(position: .top, alignment: .leading)
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        
+        .tint(Color.accentColor)
+        
+        .frame(height: 200)
+        .frame(maxWidth: .infinity)
+    }
+    
+    private var tableSection: some View {
+        HStack {
+            VStack(alignment: .leading, spacing:16) {
+                Text("200")
+                    .font(.headline)
+                Text("Код ответа сайта")
+                    .opacity(0.5)
+            }
+            .padding(.leading, 12)
+            .padding(.trailing, 9)
+            .padding(.vertical, 9)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .background(.white.opacity(0.03))
+
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .inset(by: 0.5)
+                    .stroke(.white.opacity(0.08), lineWidth: 1)
+            )
+            
+            VStack(alignment: .leading, spacing:16) {
+                Text("Только что")
+                    .font(.headline)
+                Text("Обновлено")
+                    .opacity(0.5)
+            }
+            .padding(.leading, 12)
+            .padding(.trailing, 9)
+            .padding(.vertical, 9)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .background(.white.opacity(0.03))
+            //.background(.ultraThinMaterial)
+
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .inset(by: 0.5)
+                    .stroke(.white.opacity(0.08), lineWidth: 1)
+                    .fill(.clear)
+                
+            )
+        }
+        .padding()
+        .padding(.top, 200)
+
     }
     
     private var timeRangeSection: some View {
@@ -316,7 +329,7 @@ struct WebsiteExtractedView: View {
                     .foregroundStyle(.white)
             }
             .padding(8)
-            .background(.accent)
+            .background(.red) //accentColor
             .cornerRadius(10)
         }
         .padding()

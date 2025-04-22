@@ -12,18 +12,9 @@ class AppViewModel: ObservableObject {
 
     @Published var selectedTab: Int = 1
     @Published var flashSection: Section? = nil
-    @Published var domains: [String] {
-        didSet {
-            saveDomains()
-        }
-    }
     
     enum Section {
         case settingsDomains
-    }
-    
-    init() {
-        self.domains = AppViewModel.loadDomains()
     }
     
     func flashSection(_ section: Section) {
@@ -38,18 +29,5 @@ class AppViewModel: ObservableObject {
                 }
             }
         }
-    }
-
-    func addDomain(_ domain: String) {
-        domains.append(domain)
-        objectWillChange.send()
-    }
-
-    private func saveDomains() {
-        UserDefaults.standard.set(domains, forKey: "myDomains")
-    }
-    
-    private static func loadDomains() -> [String] {
-        return UserDefaults.standard.stringArray(forKey: "myDomains") ?? []
     }
 }
